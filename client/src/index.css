@@ -4,8 +4,7 @@
   margin: 0;
 }
 
-body {
-  display: flex;
-  justify-content: center;
-  text-align: center;
+
+#root {
+  width: 100%;
 }
