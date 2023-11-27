@@ -1,21 +1,19 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useMemo } from 'react'
 import { convertToRaw, ContentState, EditorState, convertFromHTML } from 'draft-js'
 import { Editor } from 'react-draft-wysiwyg'
 import draftToHtml from 'draftjs-to-html'
-import { useLoaderData } from 'react-router-dom'
+import { useLoaderData, useSubmit, useLocation } from 'react-router-dom'
+import { debounce } from '@mui/material'
 
 export default function Note() {
-    // const { note } = useLoaderData();
-    const note = {
-        id: '1',
-        content: '123'
-    }
-
+    const { note } = useLoaderData();
+    const submit = useSubmit();
+    const location = useLocation();
     const [editorState, setEditorState] = useState(() => {
-        return EditorState.createEmpty()
-    })
+        return EditorState.createEmpty();
+    });
 
-    const [rawHTML, setRawHTMl] = useState(note.content)
+    const [rawHTML, setRawHTML] = useState(note.content);
 
     useEffect(() => {
         const blocksFromHTML = convertFromHTML(note.content);
@@ -26,12 +24,29 @@ export default function Note() {
         setEditorState(EditorState.createWithContent(state));
     }, [note.id]);
 
+    console.log({ location })
+
     useEffect(() => {
-        setRawHTMl(note.content)
+        debouncedMemorized(rawHTML, note, location.pathname);
+    }, [rawHTML, location.pathname]);
+
+    const debouncedMemorized = useMemo(() => {
+        return debounce((rawHTML, note, pathname) => {
+            if (rawHTML === note.content) return;
+
+            submit({ ...note, content: rawHTML }, {
+                method: 'post',
+                action: pathname
+            })
+        }, 1000);
+    }, []);
+
+    useEffect(() => {
+        setRawHTML(note.content)
     }, [note.content])
     const handleOnChange = (e) => {
         setEditorState(e)
-        setRawHTMl(draftToHtml(convertToRaw(e.getCurrentContent())))
+        setRawHTML(draftToHtml(convertToRaw(e.getCurrentContent())))
     }
 
     return (

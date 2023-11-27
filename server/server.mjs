@@ -20,7 +20,7 @@ const httpServer = http.createServer(app)
 
 
 //connect to db
-const URI = 'mongodb+srv://sinh:sing@cluster0.kzvyb3f.mongodb.net/?retryWrites=true&w=majority'
+const URI = 'mongodb+srv://sinh:sing@cluster0.lqck8sv.mongodb.net/?retryWrites=true&w=majority'
 const PORT = process.env.PORT || 4000
 const server = new ApolloServer({
   typeDefs,

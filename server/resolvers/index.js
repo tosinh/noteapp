@@ -1,5 +1,5 @@
 import fakeData from "../fakeData/index.js";
-import { AuthorModel, FolderModel, NoteModel } from "../models/index.js"
+import { AuthorModel, NoteModel, FolderModel } from "../models/index.js"
 
 export const resolvers = {
     Query: {
@@ -22,6 +22,7 @@ export const resolvers = {
             const noteId = args.noteId;
             const note = await NoteModel.findById(noteId);
             return note;
+            // return fakeData.notes.find((note) => note.id === noteId);
         },
     },
 
@@ -42,6 +43,7 @@ export const resolvers = {
             });
             console.log({ notes });
             return notes;
+            // return fakeData.notes.filter((note) => note.folderId === parent.id);
         },
     },
     Mutation: {
@@ -50,14 +52,19 @@ export const resolvers = {
             await newNote.save();
             return newNote;
         },
+        updateNote: async (parent, args) => {
+            const noteId = args.id;
+            const note = await NoteModel.findByIdAndUpdate(noteId, args);
+            return note;
+        },
         addFolder: async (parent, args, context) => {
             const newFolder = new FolderModel({ ...args, authorId: context.uid });
             console.log({ newFolder });
-            pubsub.publish('FOLDER_CREATED', {
-                folderCreated: {
-                    message: 'Một thư mục mới đã được tạo',
-                },
-            });
+            // pubsub.publish('FOLDER_CREATED', {
+            //     folderCreated: {
+            //         message: 'A new folder created',
+            //     },
+            // });
             await newFolder.save();
             return newFolder;
         },
