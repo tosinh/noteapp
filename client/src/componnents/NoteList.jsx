@@ -1,13 +1,37 @@
-import { Box, Card, CardContent, Grid, List, Typography } from '@mui/material'
-import React, { useState } from 'react'
-import { Link, Outlet, useParams, useLoaderData } from 'react-router-dom';
+import { NoteAdd, NoteAddOutlined } from '@mui/icons-material';
+import { Box, Card, CardContent, Grid, IconButton, List, Tooltip, Typography } from '@mui/material'
+import React, { useEffect, useState } from 'react'
+import { Link, Outlet, useParams, useLoaderData, useSubmit, useNavigate } from 'react-router-dom';
 
 export default function NoteList() {
-    const { noteId } = useParams()
+    const { noteId, folderId } = useParams()
     const [activeNoteId, setActiveNoteId] = useState(noteId)
     const { folder } = useLoaderData()
+    const submit = useSubmit()
+    const navigate = useNavigate()
 
     console.log('[NoteList]', { folder })
+
+    useEffect(() => {
+        if (noteId) {
+            setActiveNoteId(noteId);
+            return;
+        }
+
+        if (folder?.notes?.[0]) {
+            navigate(`note/${folder.notes[0].id}`);
+        }
+    }, [noteId, folder.notes])
+
+    const handleAddNewNote = () => {
+        submit(
+            {
+                content: '',
+                folderId,
+            },
+            { method: 'post', action: `/folders/${folderId}` }
+        );
+    };
 
     // const folder = { notes: [{ id: '1', content: '<p>This is a new note</p>' }] }
     return (
@@ -23,6 +47,9 @@ export default function NoteList() {
                             }}
                         >
                             <Typography sx={{ fontWeight: 'bold' }}>Notes</Typography>
+                            <Tooltip title="Add Note" onClick={handleAddNewNote}>
+                                <IconButton size='small'><NoteAddOutlined /></IconButton>
+                            </Tooltip>
 
                         </Box>
                     }

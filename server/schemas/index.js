@@ -1,28 +1,32 @@
 export const typeDefs = `#graphql
-type Folder{
-    id: String,
+
+type Folder {
+    id: String!,
     name: String,
     createdAt: String,
     author: Author,
     notes: [Note]
-}
+  }
 
-type Note {
-    id: String,
+  type Note {
+    id: String!,
     content: String,
-}
+  }
 
-type Author{
-    id: String,
-    name: String, 
-}
+  type Author {
+    uid: String!,
+    name: String!,
+  }
 
-type Query{
+  type Query {
     folders: [Folder],
-    folder(folderId: String): Folder,
+    folder(folderId: String!): Folder,
     note(noteId: String): Note,
-}
+  }
+
 type Mutation {
-    createFolder(name: String!): Folder
+  addFolder(name: String!): Folder,
+    addNote(content: String!, folderId: ID!): Note,
+    register(uid: String!, name: String!): Author,
 }
 `

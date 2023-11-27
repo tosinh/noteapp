@@ -1,12 +1,22 @@
 import { Box, Card, CardContent, List, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import NewFolder from './NewFolder';
+
 
 export default function FolderList({ folders }) {
     const { folderId } = useParams()
 
     console.log({ folderId })
+    // const { folderId } = useParams()
+
+    // console.log({ folderId })
     const [activeFolderTd, setActiveFolderId] = useState(folderId)
+
+
+    useEffect(() => {
+        setActiveFolderId(folderId);
+    }, [folderId])
 
     return (
         <List sx={{
@@ -22,11 +32,12 @@ export default function FolderList({ folders }) {
                     <Typography sx={{ fontWeight: 'bold', color: '#000' }}>
                         Folders
                     </Typography>
+                    <NewFolder />
 
                 </Box>
             }
         >
-            {folders.map(({ id, name }) => {
+            {folders && folders.map(({ id, name }) => {
                 return (
                     <Link
                         key={id}

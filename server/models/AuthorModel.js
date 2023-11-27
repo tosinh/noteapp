@@ -1,15 +1,15 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 
 const authorSchema = new mongoose.Schema({
     uid: {
         type: String,
-        required: true
+        required: true,
     },
     name: {
         type: String,
-        required: true,
+        required: true
     }
-}, { timestamps: true })
+}, { timestamps: true });
 
-const AuthorModel = mongoose.model('Author', authorSchema)
-export default AuthorModel
+const AuthorModel = mongoose.model('Author', authorSchema);
+export default AuthorModel;

@@ -7,10 +7,13 @@ import { expressMiddleware } from '@apollo/server/express4'
 import cors from 'cors'
 import mongoose from 'mongoose';
 import fakeData from './fakeData/index.js';
-import 'dotenv/config.js'
 
 import { resolvers } from './resolvers/index.js'
 import { typeDefs } from './schemas/index.js'
+import './firebaseConfig.js'
+import { getAuth } from 'firebase-admin/auth'
+
+import 'dotenv/config.js'
 
 const app = express()
 const httpServer = http.createServer(app)
@@ -27,37 +30,51 @@ const server = new ApolloServer({
 
 await server.start();
 
-app.use(cors(), bodyParser.json(), expressMiddleware(server))
+const authorizationJWT = async (req, res, next) => {
+  console.log({ authorization: req.headers.authorization });
+  const authorizationHeader = req.headers.authorization;
+
+  if (authorizationHeader) {
+    const accessToken = authorizationHeader.split(' ')[1];
+
+    getAuth()
+      .verifyIdToken(accessToken)
+      .then((decodedToken) => {
+        console.log({ decodedToken });
+        res.locals.uid = decodedToken.uid;
+        next();
+      })
+      .catch((err) => {
+        console.log({ err });
+        return res.status(403).json({ message: 'Forbidden', error: err });
+      });
+  } else {
+    // next();
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+};
 
 
-// async function startServer() {
-//   await server.start();
+app.use(cors(), bodyParser.json(), expressMiddleware(server, {
+  context: async ({ req, res }) => {
+    return { uid: res.locals.uid };
+  },
+}))
 
-//   app.use(cors(), bodyParser.json(), expressMiddleware(server));
 
-//   mongoose.set('strictQuery', false);
-//   mongoose.connect(URI, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-//     useCreateIndex: true,
-//   })
-//     .then(async () => {
-//       console.log('Connected to DB');
-//       await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
-//       console.log(`Server is running at http://localhost:${PORT}`);
-//     })
-//     .catch(() => {
-//       console.log('Lỗi')
-//       return 0
-//     });
-// }
-
-// startServer();
+// mongoose.set('strictQuery', false);
+// mongoose.connect(URI, {
+//   useNewUrlParser: true,
+//   useUnifiedTopology: true,
+// })
+//   .then(async () => {
+//     console.log('Connected to DB');
+//     await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
+//     console.log('http://localhost:4000');
+//   });
 mongoose.set('strictQuery', false);
-mongoose.connect(URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+
+mongoose.connect(URI)
   .then(async () => {
     console.log('Connected to DB');
     await new Promise((resolve) => httpServer.listen({ port: PORT }, resolve));
