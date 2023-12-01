@@ -1,5 +1,5 @@
 import React, { useContext } from 'react'
-import { Typography, Button } from '@mui/material'
+import { Typography, Button, Container, Grid, Paper } from '@mui/material'
 import { GoogleAuthProvider, signInWithPopup, getAuth } from 'firebase/auth'
 import { AuthContext } from '../context/AuthProvider'
 import { useNavigate, Navigate } from 'react-router-dom'
@@ -33,10 +33,21 @@ export default function Login() {
     }
     return (
         <>
-            <Typography variant='h2'>Welcome to note app</Typography>
-            <Button variant='outlined' onClick={handleLoginWithGoogle}>
-                Login with Google
-            </Button>
+            <Container component="main" maxWidth="xs">
+                <Paper elevation={3} style={{ padding: '20px', textAlign: 'center', marginTop: '64px' }}>
+                    <Typography variant='h4' gutterBottom>
+                        Welcome to the Note App
+                    </Typography>
+                    <Button
+                        variant='contained'
+                        color='primary'
+                        onClick={handleLoginWithGoogle}
+                        style={{ marginTop: '20px', padding: '10px 20px' }}
+                    >
+                        Login with Google
+                    </Button>
+                </Paper>
+            </Container>
         </>
     )
 }
