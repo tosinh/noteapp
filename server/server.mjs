@@ -7,6 +7,9 @@ import { expressMiddleware } from '@apollo/server/express4'
 import cors from 'cors'
 import mongoose from 'mongoose';
 import fakeData from './fakeData/index.js';
+import { makeExecutableSchema } from '@graphql-tools/schema';
+import { WebSocketServer } from 'ws';
+import { useServer } from 'graphql-ws/lib/use/ws';
 
 import { resolvers } from './resolvers/index.js'
 import { typeDefs } from './schemas/index.js'
@@ -22,10 +25,34 @@ const httpServer = http.createServer(app)
 //connect to db
 const URI = 'mongodb+srv://sinh:sing@cluster0.lqck8sv.mongodb.net/?retryWrites=true&w=majority'
 const PORT = process.env.PORT || 4000
+
+const schema = makeExecutableSchema({ typeDefs, resolvers });
+// Creating the WebSocket server
+const wsServer = new WebSocketServer({
+  // This is the `httpServer` we created in a previous step.
+  server: httpServer,
+  // Pass a different path here if app.use
+  // serves expressMiddleware at a different path
+  path: '/',
+});
+
+// Hand in the schema we just created and have the
+// WebSocketServer start listening.
+const serverCleanup = useServer({ schema }, wsServer);
 const server = new ApolloServer({
-  typeDefs,
-  resolvers,
-  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  schema,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer }),
+  // Proper shutdown for the WebSocket server.
+  {
+    async serverWillStart() {
+      return {
+        async drainServer() {
+          await serverCleanup.dispose();
+        },
+      };
+    },
+  },],
+
 });
 
 await server.start();
@@ -49,8 +76,8 @@ const authorizationJWT = async (req, res, next) => {
         return res.status(403).json({ message: 'Forbidden', error: err });
       });
   } else {
-    // next();
-    return res.status(401).json({ message: 'Unauthorized' });
+    next();
+    //return res.status(401).json({ message: 'Unauthorized' });
   }
 };
 
