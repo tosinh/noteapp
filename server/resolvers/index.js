@@ -81,6 +81,50 @@ export const resolvers = {
             await newFolder.save();
             return newFolder;
         },
+        deleteFolder: async (parent, args) => {
+            const folderId = args.id;
+
+            try {
+                const deletedFolder = await FolderModel.findByIdAndDelete(folderId);
+
+                if (!deletedFolder) {
+                    throw new Error('Folder not found or unable to delete.');
+                }
+
+                pubsub.publish('FOLDER_DELETED', {
+                    folderDeleted: {
+                        message: 'A folder was deleted',
+                    },
+                });
+
+                return { success: true };
+            } catch (error) {
+                console.error('Error deleting folder:', error);
+                throw error;
+            }
+        },
+        deleteNote: async (parent, args) => {
+            const noteId = args.id;
+
+            try {
+                const deletedNote = await NoteModel.findByIdAndDelete(noteId);
+
+                if (!deletedNote) {
+                    throw new Error('Note not found or unable to delete.');
+                }
+
+                pubsub.publish('NOTE_DELETED', {
+                    noteDeleted: {
+                        message: 'A note was deleted',
+                    },
+                });
+
+                return { success: true };
+            } catch (error) {
+                console.error('Error deleting note:', error);
+                throw error;
+            }
+        },
         register: async (parent, args) => {
             const foundUser = await AuthorModel.findOne({ uid: args.uid });
 
@@ -103,7 +147,8 @@ export const resolvers = {
 
             await newNotification.save();
             return { message: 'SUCCESS' }
-        }
+        },
+
     },
     Subscription: {
         folderCreated: {
@@ -111,6 +156,12 @@ export const resolvers = {
         },
         notification: {
             subscribe: () => pubsub.asyncIterator(['PUSH_NOTIFICATION'])
-        }
+        },
+        folderDeleted: {
+            subscribe: () => pubsub.asyncIterator(['FOLDER_DELETED']),
+        },
+        noteDeleted: {
+            subscribe: () => pubsub.asyncIterator(['NOTE_DELETED']),
+        },
     },
 }

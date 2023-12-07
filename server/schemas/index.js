@@ -31,6 +31,8 @@ type Mutation {
   addFolder(name: String!): Folder,
   addNote(content: String!, folderId: ID!): Note,
   updateNote(id: String!, content: String!): Note,
+  deleteFolder(id: ID!): Message,
+  deleteNote(id: ID!): Message,
   register(uid: String!, name: String!): Author,
   pushNotification(content: String): Message
 }
@@ -38,7 +40,9 @@ type Message {
   message: String
 }
 type Subscription {
-  folderCreated: Message
+  folderCreated: Message,
+  folderDeleted: Message,
+  noteDeleted: Message,
   notification: Message
 }
 

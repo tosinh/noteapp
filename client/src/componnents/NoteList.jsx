@@ -1,13 +1,17 @@
 import { NoteAddOutlined } from '@mui/icons-material';
 import { Box, Card, CardContent, Grid, IconButton, List, Tooltip, Typography } from '@mui/material'
+import DeleteIcon from '@mui/icons-material/Delete';
 import React, { useEffect, useState } from 'react'
 import { Link, Outlet, useParams, useLoaderData, useSubmit, useNavigate } from 'react-router-dom';
 import moment from 'moment'
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Button } from '@mui/material';
 
 export default function NoteList() {
     const { noteId, folderId } = useParams();
     const [activeNoteId, setActiveNoteId] = useState(noteId);
     const { folder } = useLoaderData();
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [deleteNoteId, setDeleteNoteId] = useState(null);
     const submit = useSubmit();
     const navigate = useNavigate();
 
@@ -34,6 +38,27 @@ export default function NoteList() {
             { method: 'post', action: `/folders/${folderId}` }
         );
     };
+
+    const handleDeleteNote = (noteId) => {
+        setDeleteNoteId(noteId);
+        setOpenDeleteDialog(true);
+    };
+    const handleCancelDelete = () => {
+        // Close the delete confirmation dialog without performing the delete action
+        setOpenDeleteDialog(false);
+    };
+
+    const handleConfirmDelete = () => {
+        submit(
+            null,
+            { method: 'delete', action: `/notes/${deleteNoteId}` } // Corrected action to delete a note
+        );
+
+        // Close the delete confirmation dialog
+        setOpenDeleteDialog(false);
+    };
+
+
 
     // const folder = { notes: [{ id: '1', content: '<p>This is a new note</p>' }] }
     return (
@@ -82,6 +107,8 @@ export default function NoteList() {
                                         mb: '5px',
                                         backgroundColor:
                                             id === activeNoteId ? '#DCDCDC' : null,
+                                        display: 'flex',
+                                        justifyContent: 'space-between'
                                     }}
                                 >
                                     <CardContent
@@ -97,12 +124,39 @@ export default function NoteList() {
                                             {moment(updatedAt).format('MMMM Do YYYY, h:mm:ss a')}
                                         </Typography>
                                     </CardContent>
+                                    <IconButton
+                                        sx={{
+                                            visibility: id === activeNoteId ? 'visible' : 'hidden'
+                                        }}
+                                        onClick={() => handleDeleteNote(id)}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
                                 </Card>
                             </Link>
                         );
                     })}
                 </List>
             </Grid>
+            <Dialog
+                open={openDeleteDialog}
+                onClose={handleCancelDelete}
+                aria-labelledby="alert-dialog-title"
+                aria-describedby="alert-dialog-description"
+            >
+                <DialogTitle id="alert-dialog-title">{"Confirm Delete"}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        Are you sure you want to delete this note?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCancelDelete}>Cancel</Button>
+                    <Button onClick={handleConfirmDelete} autoFocus>
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
             <Grid item xs={8}>
                 <Outlet />
             </Grid>

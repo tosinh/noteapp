@@ -35,3 +35,24 @@ export const addNewFolder = async (newFolder) => {
 
   return data;
 };
+export const deleteFolder = async (folderId) => {
+  const mutation = `
+  mutation DeleteFolder($deleteFolderId: ID!) {
+    deleteFolder(id: $deleteFolderId) {
+      message
+    }
+  }
+  `;
+
+  try {
+    const data = await graphQLRequest({
+      query: mutation,
+      variables: { id: folderId },
+    });
+
+    return data;
+  } catch (error) {
+    console.error('Error deleting folder:', error);
+    throw error; // Re-throw the error for further handling if needed
+  }
+};

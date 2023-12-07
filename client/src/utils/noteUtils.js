@@ -86,3 +86,31 @@ export const updateNote = async ({ params, request }) => {
 
   return updateNote;
 }
+export const deleteNote = async ({ params: { noteId } }) => {
+  try {
+    // Define the GraphQL mutation query
+    const query = `mutation DeleteNoteMutation($noteId: String!) {
+      deleteNote(noteId: $noteId) {
+        success
+      }
+    }`;
+
+    // Send the GraphQL request
+    const { deleteNote } = await graphQLRequest({
+      query,
+      variables: {
+        noteId,
+      },
+    });
+
+    // Check if the delete operation was successful
+    if (deleteNote.success) {
+      return { success: true };
+    } else {
+      throw new Error('Failed to delete note');
+    }
+  } catch (error) {
+    console.error('Error deleting note:', error);
+    return { success: false, error: error.message };
+  }
+};
