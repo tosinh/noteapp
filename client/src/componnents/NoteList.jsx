@@ -51,7 +51,7 @@ export default function NoteList() {
     const handleConfirmDelete = () => {
         submit(
             null,
-            { method: 'delete', action: `/notes/${deleteNoteId}` } // Corrected action to delete a note
+            { method: 'delete', action: `/folders/${folderId}` } // Corrected action to delete a note
         );
 
         // Close the delete confirmation dialog
