@@ -103,23 +103,17 @@ export const resolvers = {
                 throw error;
             }
         },
-        deleteNote: async (parent, args) => {
-            const noteId = args.id;
-
+        deleteNote: async (_, { noteId }) => {
             try {
-                const deletedNote = await NoteModel.findByIdAndDelete(noteId);
+                // Find the note by ID
+                const deletedNote = await Note.findByIdAndRemove(noteId);
 
+                // Check if the note was found and deleted
                 if (!deletedNote) {
-                    throw new Error('Note not found or unable to delete.');
+                    throw new Error('Note not found or unable to delete');
                 }
 
-                pubsub.publish('NOTE_DELETED', {
-                    noteDeleted: {
-                        message: 'A note was deleted',
-                    },
-                });
-
-                return { success: true };
+                return deletedNote;
             } catch (error) {
                 console.error('Error deleting note:', error);
                 throw error;
